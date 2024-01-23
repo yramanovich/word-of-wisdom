@@ -7,7 +7,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/yramanovich/world-of-wisdom/bytesio"
+	"github.com/yramanovich/word-of-wisdom/bytesio"
 )
 
 // Difficulter provides challenge difficulty for HashcashChallenger.

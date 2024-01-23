@@ -10,10 +10,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/yramanovich/world-of-wisdom/bucket"
-	"github.com/yramanovich/world-of-wisdom/pow"
-	"github.com/yramanovich/world-of-wisdom/quotes"
-	"github.com/yramanovich/world-of-wisdom/tcp"
+	"github.com/yramanovich/word-of-wisdom/bucket"
+	"github.com/yramanovich/word-of-wisdom/pow"
+	"github.com/yramanovich/word-of-wisdom/quotes"
+	"github.com/yramanovich/word-of-wisdom/tcp"
 )
 
 // Configure application with flags for the simplicity.

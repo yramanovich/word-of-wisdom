@@ -9,8 +9,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/yramanovich/world-of-wisdom/bytesio"
-	"github.com/yramanovich/world-of-wisdom/pow"
+	"github.com/yramanovich/word-of-wisdom/bytesio"
+	"github.com/yramanovich/word-of-wisdom/pow"
 )
 
 var (
