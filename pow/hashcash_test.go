@@ -37,3 +37,38 @@ func TestHashcash(t *testing.T) {
 	err = Verify([]byte("1:0:1705962838:bmV3:Bod8ozrlUcqUImyR2swBuQ==:SwAAAA=="), hc, time.Second)
 	assert.Error(t, err)
 }
+
+func Test_hasNLeadingZeroes(t *testing.T) {
+	type args struct {
+		hash []byte
+		n    int
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "has 10 leading zeroes",
+			args: args{
+				hash: []byte{0x0, 0x0},
+				n:    10,
+			},
+			want: true,
+		},
+		{
+			name: "has not 10 leading zeroes",
+			args: args{
+				hash: []byte{0x0, 0x50},
+				n:    10,
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, hasNLeadingZeroes(tt.args.hash, tt.args.n),
+				"hasNLeadingZeroes(%v, %v)", tt.args.hash, tt.args.n)
+		})
+	}
+}

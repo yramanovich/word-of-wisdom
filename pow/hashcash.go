@@ -7,6 +7,8 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"fmt"
+	"math"
+	"math/bits"
 	"strconv"
 	"time"
 )
@@ -83,8 +85,6 @@ func Solve(b []byte) ([]byte, error) {
 		return nil, fmt.Errorf("parse hashcash: %w", err)
 	}
 
-	n := countBits(hc.bits)
-
 	solution := uint32(0)
 	sb := make([]byte, 4)
 	for {
@@ -96,7 +96,7 @@ func Solve(b []byte) ([]byte, error) {
 		hc.counter = encodedSolution
 
 		hash := sha256.Sum256(bytes.Join([][]byte{b, encodedSolution}, []byte{delim}))
-		if !hasNBits(hash[:n], hc.bits, n) {
+		if !hasNLeadingZeroes(hash[:], hc.bits) {
 			solution++
 			continue
 		}
@@ -122,36 +122,33 @@ func Verify(solution, challenge []byte, expiration time.Duration) error {
 	}
 
 	hash := sha256.Sum256(solution)
-	n := countBits(hc.bits)
 
-	if !hasNBits(hash[:n], hc.bits, n) {
+	if !hasNLeadingZeroes(hash[:], hc.bits) {
 		return fmt.Errorf("invalid solution")
 	}
 
 	return nil
 }
 
-func hasNBits(hash []byte, bits, n int) bool {
-	if bits == 0 {
-		return true
+func hasNLeadingZeroes(hash []byte, n int) bool {
+	// Count how many bytes we need to check
+	bytesNum := int(math.Ceil(float64(n) / 8))
+
+	if len(hash) < bytesNum {
+		return false
 	}
 
-	for i := 0; i < n; i++ {
-		if bits > 8 {
-			bits -= 8
-			if hash[i] != 0 {
-				return false
-			}
-			continue
-		}
-
-		// (bits % 8) == bits
-		pad := 8 - bits
-		if hash[i]>>pad == 0 {
-			return true
+	zeroesNum := 0
+	for i := 0; i < bytesNum; i++ {
+		u, _ := binary.Uvarint([]byte{hash[i]})
+		num := bits.LeadingZeros8(uint8(u))
+		zeroesNum += num
+		if num < 8 {
+			break
 		}
 	}
-	return false
+
+	return zeroesNum >= n
 }
 
 func parse(b []byte) (hashcash, error) {
@@ -167,11 +164,11 @@ func parse(b []byte) (hashcash, error) {
 	}
 	hc.version = ver
 
-	bits, err := strconv.Atoi(string(split[1]))
+	bitNum, err := strconv.Atoi(string(split[1]))
 	if err != nil {
 		return hc, fmt.Errorf("invalid bits: %w", err)
 	}
-	hc.bits = bits
+	hc.bits = bitNum
 
 	date, err := strconv.ParseInt(string(split[2]), 10, 64)
 	if err != nil {
@@ -200,12 +197,4 @@ func parse(b []byte) (hashcash, error) {
 	}
 
 	return hc, nil
-}
-
-func countBits(bits int) int {
-	n, m := bits/8, bits%8
-	if m > 0 {
-		n++
-	}
-	return n
 }
